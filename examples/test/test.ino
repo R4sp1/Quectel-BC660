@@ -13,8 +13,6 @@ void setup()
 	Serial.println("Initializing module");
 	quectel.begin(&SERIAL_PORT);
 	quectel.setDeepSleep();
-	Serial.print("Firmware: ");
-	Serial.println(quectel.getFirmwareVersion());
 	Serial.print("RSSI: ");	
 	Serial.println(quectel.getRSSI());
 	Serial.print("BER: "); 
@@ -34,6 +32,8 @@ void setup()
   	Serial.println(quectel.engineeringData.RSSI);
 	Serial.print("SINR: "); 
   	Serial.println(quectel.engineeringData.SINR);
+	Serial.print("Firmware: ");
+	Serial.println(quectel.engineeringData.firmwareVersion);
 	quectel.setDeepSleep(1);
 }
 

@@ -18,42 +18,14 @@ bool QuectelBC660::begin(HardwareSerial *uart)
 
     wakeUp();
 
-    sendAndCheckReply("ATE0", _OK, 1000);
     if(_sleepMode == NULL)
     {
-        _sleepMode = 1;
+        updateSleepMode();
     }
-    if (sendAndWaitForReply("ATI", 1000, 5))
+
+    if(!sendAndCheckReply("ATE0", _OK, 1000))
     {
-		// response is:
-		// Quectel_Ltd
-    	// Quectel_BC660K-GL
-        // Revision: BC660KGLAAR01A01
-        // 
-        // OK
-
-
-        const char linefeed[] = "\n";
-        char * token = strtok(_buffer, linefeed);
-        if (token == nullptr || strcmp(token, "Quectel_Ltd") != 0)
-        {
-            if(_debug != false){
-                Serial.println("\nNot a Quectel module!");
-            }
-        }
-        token = strtok(nullptr, linefeed);
-        if (token == nullptr)
-        {
-            if(_debug != false){
-                Serial.println("\nParse error");
-            }
-            return false;
-        }
-        token = strtok(nullptr, linefeed);
-        if (strlen(token) > 10)
-        {
-            strcpy(_firmwareVersion, token + 10);
-        }
+        return false;
     }
     return true;
 }
@@ -260,6 +232,10 @@ void QuectelBC660::wakeUp()
     if(_debug != false){
         Serial.print("\n(Wakeup: ");
     }
+    if(_sleepMode == NULL)
+    {
+        updateSleepMode();
+    }
     if(_sleepMode != 0)
     {
         if(_debug != false){
@@ -461,6 +437,54 @@ void QuectelBC660::getData(){
                 engineeringData.SINR =  strtol(token, &ptr, 10);
         }
     }
+
+    if (sendAndWaitForReply("AT+CGMR", 1000, 5))
+    {
+		// response is:
+        // Revision: BC660KGLAAR01A01
+        // 
+        // OK
+
+        char * token = strtok(_buffer, " ");
+        if (token)
+        {
+            strcpy(engineeringData.firmwareVersion, token + 10);
+        }
+    }
+
+    
+    /*if (sendAndWaitForReply("ATI", 1000, 5))
+    {
+		// response is:
+		// Quectel_Ltd
+    	// Quectel_BC660K-GL
+        // Revision: BC660KGLAAR01A01
+        // 
+        // OK
+
+
+        const char linefeed[] = "\n";
+        char * token = strtok(_buffer, linefeed);
+        if (token == nullptr || strcmp(token, "Quectel_Ltd") != 0)
+        {
+            if(_debug != false){
+                Serial.println("\nNot a Quectel module!");
+            }
+        }
+        token = strtok(nullptr, linefeed);
+        if (token == nullptr)
+        {
+            if(_debug != false){
+                Serial.println("\nParse error");
+            }
+            return false;
+        }
+        token = strtok(nullptr, linefeed);
+        if (strlen(token) > 10)
+        {
+            strcpy(_firmwareVersion, token + 10);
+        }
+    }*/
 }
 
 
@@ -543,6 +567,19 @@ void QuectelBC660::flush()
     while (_uart->available())
     {
         _uart->read();
+    }
+}
+
+void QuectelBC660::updateSleepMode()
+{
+    if(sendAndWaitForReply("AT+QSCLK?", 1000, 3))
+    {
+        char * token = strtok(_buffer, " ");
+        if (token)
+        {
+            char* ptr;
+            _sleepMode =  strtol(token, &ptr, 10);
+        }
     }
 }
 

@@ -33,6 +33,7 @@ class QuectelBC660 {
             int8_t RSRQ;
             int8_t RSSI;
             int8_t SINR;
+            char firmwareVersion[20];
         };
         
         engineeringStruct engineeringData;
@@ -46,6 +47,8 @@ class QuectelBC660 {
         bool sendAndWaitForReply(const char* command, uint16_t timeout = 1000, uint8_t lines = 1);
         bool sendAndCheckReply(const char* command, const char* reply, uint16_t timeout = 1000);
         bool readReply(uint16_t timeout = 1000, uint8_t lines = 1);
+
+        void updateSleepMode();
 
         int8_t _wakeUpPin;
         bool _debug;
