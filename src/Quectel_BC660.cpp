@@ -19,7 +19,10 @@ bool QuectelBC660::begin(HardwareSerial *uart)
     wakeUp();
 
     sendAndCheckReply("ATE0", _OK, 1000);
-
+    if(_sleepMode == NULL)
+    {
+        _sleepMode = 1;
+    }
     if (sendAndWaitForReply("ATI", 1000, 5))
     {
 		// response is:
@@ -163,7 +166,7 @@ const char* QuectelBC660::getDateAndTime()
     return "ERROR";
 }
 
-int8_t QuectelBC660::getStatusCode()
+uint8_t QuectelBC660::getStatusCode()
 {
     // Response: +CREG: <n>,<stat>
     // STAT: Integer type
@@ -231,11 +234,32 @@ const char* QuectelBC660::getStatus()
     return "ERROR";
 }
 
+bool QuectelBC660::registered(uint8_t noOfTries, uint32_t delayBetweenTries)
+{
+    for(uint8_t i = 0; i < noOfTries; i++)
+    {
+        uint8_t statusCode = getStatusCode();
+        if(_debug != false){
+            Serial.print("\nStatus code: ");
+            Serial.println(statusCode);
+        }
+        if(statusCode == 1 || statusCode == 5)
+        {
+            return true;
+        }
+        else
+        {
+            delay(delayBetweenTries);
+        }
+    }
+    return false;
+}
+
 void QuectelBC660::wakeUp()
 {
     if(_debug != false){
-            Serial.print("\n(Wakeup: ");
-            }
+        Serial.print("\n(Wakeup: ");
+    }
     if(_sleepMode != 0)
     {
         if(_debug != false){

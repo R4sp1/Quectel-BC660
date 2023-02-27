@@ -1,4 +1,4 @@
-#include "Quectel_BC660".h"
+#include <Quectel_BC660.h>
 
 #define SERIAL_PORT Serial2
 

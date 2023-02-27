@@ -16,8 +16,9 @@ class QuectelBC660 {
         const char* getDateAndTime();
         int8_t getRSSI();
         uint8_t getBER();
-        int8_t getStatusCode();
+        uint8_t getStatusCode();
         const char* getStatus();
+        bool registered(uint8_t noOfTries = 1, uint32_t delayBetweenTries = 5000);
         
         bool setDeepSleep(uint8_t sleepMode = 0);
 
