@@ -27,6 +27,10 @@ class QuectelBC660 {
         bool connectMQTT(const char* clientID);
         bool publishMQTT(const char* msg, uint16_t msgLen, const char* topic, uint16_t msgID = 0, uint8_t QoS = 0, uint8_t retain = 0);
 
+        bool openUDP(const char* host, uint16_t port, uint8_t TCPconnectID = 0);
+        bool closeUDP();
+        bool sendDataUDP(const char* msg, uint16_t msgLen)
+
         struct engineeringStruct
         {
             int8_t RSRP;
@@ -61,6 +65,8 @@ class QuectelBC660 {
         char _command[32];
         char _firmwareVersion[20];
         char _dateAndTime[40];
+        char _host[40];
+        char _port[5];
 
         const char* _AT = "AT";
         const char* _OK = "OK";

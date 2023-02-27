@@ -356,13 +356,13 @@ bool QuectelBC660::closeMQTT()
         if(_debug != false)
         {
             Serial.println("\nFailed to close MQTT connection!");
-         }
+        }
         return false;
     }
     if(_debug != false)
         {
             Serial.println("\nMQTT connection closed successfully!");
-         }
+        }
     return true;
 }
 
@@ -398,6 +398,96 @@ bool QuectelBC660::publishMQTT(const char* msg, uint16_t msgLen, const char* top
     if(sendAndWaitForReply(_buffer, 2000, 3))
     {
         return true;
+    }
+    return false;
+}
+
+bool QuectelBC660::openUDP(const char* host, uint16_t port, uint8_t TCPconnectID)
+{
+    _TCPconnectID = TCPconnectID;
+    strcpy(_host, host);
+    strcpy(_port, port);
+    sprintf(_buffer, "AT+QIOPEN=0,%d,\"UDP\",\"%s\",%d", _TCPconnectID, _host, _port);
+    wakeUp();
+    if(sendAndWaitForReply(_buffer, 60000, 3))
+    {
+        char * token = strtok(_buffer, ",");
+        if (token)
+        {
+            token = strtok(nullptr, "\n");
+            if (token)
+            {
+                char* ptr;
+                uint8_t stat;
+                stat =  strtol(token, &ptr, 10);
+
+                if (stat == 0)
+                {
+                    if(_debug != false)
+                    {
+                    Serial.print("\nUDP client connected successfully, Stat: ");
+                    Serial.println(stat);
+                    }
+                    return true;
+                }
+                else
+                {
+                    if(_debug != false)
+                    {
+                    Serial.print("\nUDP client connection failed, Stat: ");
+                    Serial.println(stat);
+                    }
+                    return false;
+                }
+            }
+        }
+    }
+}
+
+bool QuectelBC660::closeUDP()
+{
+    sprintf(_buffer, "AT+QICLOSE=%d", _TCPconnectID);
+    if (!sendAndCheckReply(_buffer, _OK, 1000))
+    {
+        if(_debug != false)
+        {
+            Serial.println("\nFailed to close UDP connection!");
+        }
+        return false;
+    }
+    if(_debug != false)
+        {
+            Serial.println("\nUDP connection closed successfully!");
+        }
+    return true;
+}
+
+bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
+{
+    sprintf(_buffer, "AT+QISEND=%d,\"%s\",\"%s\",%d", _TCPconnectID, _host, _port, msgLen);
+    if (!sendAndWaitFor(_buffer, "> ", 5000))
+    {
+        if(_debug != false)
+        {
+            Serial.print("\nError occured before data send command");
+        }
+        return false;
+    }
+    if(_debug != false)
+    {
+        Serial.print("\n --> msg: ");
+        Serial.print(buf);
+        Serial.print(" , size: ");
+        Serial.println(msgLen);
+    }
+    _uart->write(msg, msgLen);
+    if (readReply(5000, 1) && strstr(_buffer, "SEND OK"))
+    {
+        return true;
+    }
+    if(_debug != false)
+    {
+        Serial.print("\nSend failed");
     }
     return false;
 }
@@ -486,7 +576,6 @@ void QuectelBC660::getData(){
         }
     }*/
 }
-
 
 bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, uint8_t lines)
 {
