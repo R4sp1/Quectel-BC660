@@ -227,14 +227,27 @@ bool QuectelBC660::registered(uint8_t noOfTries, uint32_t delayBetweenTries)
     return false;
 }
 
-void QuectelBC660::wakeUp()
+bool QuectelBC660::wakeUp()
 {
     if(_debug != false){
         Serial.print("\n(Wakeup: ");
     }
     if(_sleepMode == NULL)
     {
+        if(_wakeUpPin != NOT)
+        {
+            digitalWrite(_wakeUpPin, HIGH);
+            delay(300);
+            digitalWrite(_wakeUpPin, LOW);
+            delay(100);
+        }
+        else
+        {
+            sendAndCheckReply("AT", _OK, 1000);
+            delay(100);
+        }
         updateSleepMode();
+        return true;
     }
     if(_sleepMode != 0)
     {
@@ -249,20 +262,24 @@ void QuectelBC660::wakeUp()
             delay(300);
             digitalWrite(_wakeUpPin, LOW);
             delay(100);
-        } else 
+            return true;
+        } 
+        else 
         {
             if(_debug != false){
             Serial.println("AT command!)");
             }
             sendAndCheckReply("AT", _OK, 1000);
             delay(100);
+            return true;
         }
     }
     else
     {
         if(_debug != false){
-            Serial.println("Sleep mode disabled!)");
+            Serial.println("sleep mode disabled!)");
         }
+        return false;
     }
 
 }
@@ -311,7 +328,7 @@ bool QuectelBC660::openMQTT(const char* host, uint16_t port, uint8_t TCPconnectI
     // 
     // +QMTOPEN: 0,0
     wakeUp();
-    if(sendAndWaitForReply(_buffer, 2000, 3))
+    if(sendAndWaitForReply(_buffer, 5000, 3))
     {
         char * token = strtok(_buffer, ",");
         if (token)
@@ -351,7 +368,7 @@ bool QuectelBC660::closeMQTT()
     // Write command: AT+QMTCLOSE=<TCP_connectID>   
 
     sprintf(_buffer, "AT+QMTCLOSE=%d", _TCPconnectID);
-    if (!sendAndCheckReply(_buffer, _OK, 1000))
+    if (!sendAndCheckReply(_buffer, _OK, 5000))
     {
         if(_debug != false)
         {
@@ -377,7 +394,7 @@ bool QuectelBC660::connectMQTT(const char* clientID)
     // 
     // +QMTCONN: 0,0,0
     wakeUp();
-    if(sendAndWaitForReply(_buffer, 1000, 3))
+    if(sendAndWaitForReply(_buffer, 5000, 3))
     {
         return true;
     }
@@ -395,7 +412,7 @@ bool QuectelBC660::publishMQTT(const char* msg, uint16_t msgLen, const char* top
     // 
     // +QMTPUB: 0,0,0
     wakeUp();
-    if(sendAndWaitForReply(_buffer, 2000, 3))
+    if(sendAndWaitForReply(_buffer, 5000, 3))
     {
         return true;
     }

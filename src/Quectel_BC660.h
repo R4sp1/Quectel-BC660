@@ -10,7 +10,7 @@ class QuectelBC660 {
         QuectelBC660(int8_t wakeUpPin = NOT, bool debug = false);
         bool begin(HardwareSerial *uart);
 
-        void wakeUp();
+        bool wakeUp();
 
         const char* getFirmwareVersion();
         const char* getDateAndTime();
