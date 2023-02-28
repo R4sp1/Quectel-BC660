@@ -232,7 +232,7 @@ bool QuectelBC660::wakeUp()
     if(_debug != false){
         Serial.print("\n(Wakeup: ");
     }
-    if(_sleepMode == NULL)
+    /*if(_sleepMode == NULL)
     {
         if(_wakeUpPin != NOT)
         {
@@ -248,7 +248,7 @@ bool QuectelBC660::wakeUp()
         }
         updateSleepMode();
         return true;
-    }
+    }*/
     if(_sleepMode != 0)
     {
         if(_debug != false){
@@ -481,8 +481,8 @@ bool QuectelBC660::closeUDP()
 
 bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
 {
-    sprintf(_buffer, "AT+QISEND=%d,\"%s\",\"%s\",%d", _TCPconnectID, _host, _port, msgLen);
-    if (!sendAndWaitFor(_buffer, "> ", 5000))
+    sprintf(_buffer, "AT+QISEND=%d,%d", _TCPconnectID, msgLen);
+    if (!sendAndWaitFor(_buffer, ">", 5000))
     {
         if(_debug != false)
         {
@@ -498,7 +498,7 @@ bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
         Serial.println(msgLen);
     }
     _uart->write(msg, msgLen);
-    if (readReply(5000, 1) && strstr(_buffer, "SEND OK"))
+    if (readReply(5000, 3) && strstr(_buffer, "SEND OK"))
     {
         return true;
     }
@@ -639,7 +639,7 @@ bool QuectelBC660::sendAndWaitFor(const char* command, const char* reply, uint16
         if (strstr(_buffer, reply))
         {
             if(_debug != false){
-            Serial.println("MAtch found");
+            Serial.println("Match found");
             }
             break;
         }
