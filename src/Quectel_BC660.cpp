@@ -406,7 +406,7 @@ bool QuectelBC660::openUDP(const char* host, uint16_t port, uint8_t TCPconnectID
 {
     _TCPconnectID = TCPconnectID;
     strcpy(_host, host);
-    strcpy(_port, port);
+    _port = port;
     sprintf(_buffer, "AT+QIOPEN=0,%d,\"UDP\",\"%s\",%d", _TCPconnectID, _host, _port);
     wakeUp();
     if(sendAndWaitForReply(_buffer, 60000, 3))
@@ -476,7 +476,7 @@ bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
     if(_debug != false)
     {
         Serial.print("\n --> msg: ");
-        Serial.print(buf);
+        Serial.print(msg);
         Serial.print(" , size: ");
         Serial.println(msgLen);
     }
@@ -528,14 +528,14 @@ void QuectelBC660::getData(){
         }
     }
 
-    if (sendAndWaitForReply("AT+CGMR", 1000, 5))
+    if (sendAndWaitForReply("AT+CGMR", 1000, 3))
     {
 		// response is:
         // Revision: BC660KGLAAR01A01
         // 
         // OK
 
-        char * token = strtok(_buffer, " ");
+        char * token = strtok(_buffer, "\n");
         if (token)
         {
             strcpy(engineeringData.firmwareVersion, token + 10);
@@ -586,6 +586,62 @@ bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, ui
     }
     _uart->println(command);
     return readReply(timeout, lines);
+}
+
+bool QuectelBC660::sendAndWaitFor(const char* command, const char* reply, uint16_t timeout)
+{
+    uint16_t index = 0;
+
+    flush();
+	if(_debug != false){
+        Serial.print("\n --> ");
+        Serial.println(command);
+    }
+    _uart->println(command);
+    while (timeout--)
+    {
+        if (index > 254)
+        {
+            break;
+        }
+        while (_uart->available())
+        {
+            char c = _uart->read();
+            if (c == '\r')
+            {
+                continue;
+            }
+            if (c == '\n' && index == 0)
+            {
+                // Ignore first \n.
+                continue;
+            }
+            _buffer[index++] = c;
+        }
+
+        if (strstr(_buffer, reply))
+        {
+            if(_debug != false){
+            Serial.println("MAtch found");
+            }
+            break;
+        }
+        if (timeout <= 0)
+        {
+            if(_debug != false){
+            Serial.print(" <-- (Timeout) ");
+            Serial.println(_buffer);
+            }
+            return false;
+        }
+        delay(1);
+    }
+    _buffer[index] = 0;
+    if(_debug != false){
+        Serial.print(" <-- ");
+        Serial.println(_buffer);
+    }
+    return true;
 }
 
 bool QuectelBC660::sendAndCheckReply(const char* command, const char* reply, uint16_t timeout)
@@ -647,7 +703,7 @@ bool QuectelBC660::readReply(uint16_t timeout, uint8_t lines)
     if(_debug != false){
         Serial.print(" <-- ");
         Serial.println(_buffer);
-        }
+    }
     return true;
 }
 
@@ -666,8 +722,12 @@ void QuectelBC660::updateSleepMode()
         char * token = strtok(_buffer, " ");
         if (token)
         {
-            char* ptr;
-            _sleepMode =  strtol(token, &ptr, 10);
+            token = strtok(nullptr, "\n");
+            if(token)
+            {
+                char* ptr;
+                _sleepMode =  strtol(token, &ptr, 10);
+            }
         }
     }
 }

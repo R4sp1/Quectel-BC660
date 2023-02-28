@@ -29,7 +29,7 @@ class QuectelBC660 {
 
         bool openUDP(const char* host, uint16_t port, uint8_t TCPconnectID = 0);
         bool closeUDP();
-        bool sendDataUDP(const char* msg, uint16_t msgLen)
+        bool sendDataUDP(const char* msg, uint16_t msgLen);
 
         struct engineeringStruct
         {
@@ -49,6 +49,7 @@ class QuectelBC660 {
 
     private:
         bool sendAndWaitForReply(const char* command, uint16_t timeout = 1000, uint8_t lines = 1);
+        bool sendAndWaitFor(const char* command, const char* reply, uint16_t timeout); 
         bool sendAndCheckReply(const char* command, const char* reply, uint16_t timeout = 1000);
         bool readReply(uint16_t timeout = 1000, uint8_t lines = 1);
 
@@ -66,7 +67,7 @@ class QuectelBC660 {
         char _firmwareVersion[20];
         char _dateAndTime[40];
         char _host[40];
-        char _port[5];
+        uint16_t _port;
 
         const char* _AT = "AT";
         const char* _OK = "OK";
