@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <time.h>
 #include "Quectel_BC660.h"
 
 QuectelBC660::QuectelBC660(int8_t wakeUpPin, bool debug)
@@ -224,6 +225,21 @@ bool QuectelBC660::registered(uint8_t noOfTries, uint32_t delayBetweenTries)
             delay(delayBetweenTries);
         }
     }
+    return false;
+}
+
+bool QuectelBC660::setOperator(uint8_t mode)
+{
+    // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
+    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
+    wakeUp();
+    sprintf(_buffer, "AT+COPS=%d", mode);
+    if (sendAndWaitFor(_buffer, _OK, 10000))
+    {
+        flush();
+        return true;
+    }
+    flush();
     return false;
 }
 
@@ -577,30 +593,68 @@ void QuectelBC660::getData(){
     wakeUp();
     if (sendAndWaitForReply("AT+CCLK?", 1000, 3))
     {
-        char * token = strtok(_buffer, ",");
+        char * token1 = strtok(_buffer, "\n");
+        if(token1)
+        {
+            char test[3];
+            strcpy(test, token1 + 24);
+            char sign[1];
+            sign[0] = test[0];
+            char timezone[2];
+            // strcpy(sign, token + 24);
+            strcpy(timezone, test + 1);
+            if(strcmp(sign, "+"))
+            {
+                char* ptr;
+                engineeringData.timezone = strtol(timezone, &ptr, 10)/4;
+            }
+            else
+            {
+                char* ptr;
+                engineeringData.timezone = 0 - strtol(timezone, &ptr, 10)/4;
+            }
+        }
+        char * token = strtok(_buffer, " ");
+        token = strtok(nullptr, "/");
         if (token)
         {
-            if (strlen(token) > 7)
-            {
-                strcpy(engineeringData.date, token + 7);
-            }
+            char* ptr;
+            t.tm_year = 100 + strtol(token, &ptr, 10); // +100 because we have only two last digits -> 2000 + xx = 20xx but we must substract 1900 for epoch time
+        }
+        token = strtok(nullptr, "/");
+        if(token)
+        {
+            char* ptr;
+            t.tm_mon = strtol(token, &ptr, 10) - 1;
         }
         token = strtok(nullptr, ",");
         if(token)
         {
-            strcpy(engineeringData.date, token + 7);
+            char* ptr;
+            t.tm_mday = strtol(token, &ptr, 10);
+        }
+        token = strtok(nullptr, ":");
+        if(token)
+        {
+            char* ptr;
+            t.tm_hour = strtol(token, &ptr, 10) - engineeringData.timezone;
+        }
+        token = strtok(nullptr, ":");
+        if(token)
+        {
+            char* ptr;
+            t.tm_min = strtol(token, &ptr, 10);
         }
         token = strtok(nullptr, "+-");
         if(token)
         {
-            strcpy(engineeringData.time, token);
+            char* ptr;
+            t.tm_sec = strtol(token, &ptr, 10);
         }
-        token = strtok(nullptr, "\n");
-        if(token)
-        {
-            strcpy(engineeringData.timezone, token);
-        }
+        engineeringData.epoch = mktime(&t);
     }
+
+    
 
 }
 

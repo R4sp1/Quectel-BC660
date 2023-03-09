@@ -34,14 +34,16 @@ void setup()
   	Serial.println(quectel.engineeringData.SINR);
 	Serial.print("Firmware: ");
 	Serial.println(quectel.engineeringData.firmwareVersion);
+	Serial.print("Epoch: ");
+	Serial.println(quectel.engineeringData.epoch);
+	Serial.print("Time zone: ");
+	Serial.println(quectel.engineeringData.timezone);
 	quectel.setDeepSleep(1);
 }
 
 void loop()
 {
 	delay(10000);	
-	Serial.print("Time: "); 
-	Serial.println(quectel.getDateAndTime());
 	quectel.getData();
 	Serial.print("RSRP: "); 
   	Serial.println(quectel.engineeringData.RSRP);
@@ -51,4 +53,6 @@ void loop()
   	Serial.println(quectel.engineeringData.RSSI);
 	Serial.print("SINR: "); 
   	Serial.println(quectel.engineeringData.SINR);
+	Serial.print("Epoch: "); 
+	Serial.println(quectel.engineeringData.epoch);
 }

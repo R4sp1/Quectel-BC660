@@ -19,6 +19,7 @@ class QuectelBC660 {
         uint8_t getStatusCode();
         const char* getStatus();
         bool registered(uint8_t noOfTries = 1, uint32_t delayBetweenTries = 5000);
+        bool setOperator(uint8_t mode = 0);
         
         bool setDeepSleep(uint8_t sleepMode = 0);
 
@@ -38,9 +39,8 @@ class QuectelBC660 {
             int8_t RSSI;
             int8_t SINR;
             char firmwareVersion[20];
-            char date[10];
-            char time[10];
-            char timezone[5]
+            time_t epoch;
+            int16_t timezone;
         };
         
         engineeringStruct engineeringData;
@@ -71,10 +71,13 @@ class QuectelBC660 {
         char _dateAndTime[40];
         char _host[40];
         uint16_t _port;
+        struct tm t = {0};
+        
 
         const char* _AT = "AT";
         const char* _OK = "OK";
         const char* _ERROR = "ERROR";
+
         
 };
 
