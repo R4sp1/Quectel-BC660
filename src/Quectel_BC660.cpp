@@ -510,8 +510,9 @@ bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
 }
 
 void QuectelBC660::getData(){
-    wakeUp();
+    // Engineering data
     // +QENG: 0,<sc_EARFCN>,<sc_EARFCN_offset>,<sc_pci>,<sc_cellID>,[<sc_RSRP>],[<sc_RSRQ>],[<sc_RSSI>],[<sc_SINR>],<sc_band>,<sc_TAC>,[<sc_ECL>],[<sc_Tx_pwr>],<operation_mode>
+    wakeUp();
     if (sendAndWaitForReply("AT+QENG=0", 1000, 3))
     {
         char * token = strtok(_buffer, ",");
@@ -545,6 +546,8 @@ void QuectelBC660::getData(){
         }
     }
 
+    // Firmware  version
+    wakeUp();
     if (sendAndWaitForReply("AT+CGMR", 1000, 3))
     {
 		// response is:
@@ -559,39 +562,46 @@ void QuectelBC660::getData(){
         }
     }
 
-    
-    /*if (sendAndWaitForReply("ATI", 1000, 5))
+    // Date and time
+    // Response: +CCLK: <time>
+    // Time: String type. The format is "YY/MM/DD,hh:mm:ss±zz", where characters indicate
+    // year (two last digits), month, day, hour, minute, second and time zone (indicates
+    // the difference, expressed in quarters of an hour, between the local time and GMT;
+    // the range is -96 to +96.) For instance, 6th of May 2014, 22:10:00 GMT+2 hours
+    // equals "14/05/06,22:10:00+08"
+
+	// Reply is:
+    // +CCLK: 20/11/03,06:25:06+32
+    // 
+    // OK
+    wakeUp();
+    if (sendAndWaitForReply("AT+CCLK?", 1000, 3))
     {
-		// response is:
-		// Quectel_Ltd
-    	// Quectel_BC660K-GL
-        // Revision: BC660KGLAAR01A01
-        // 
-        // OK
-
-
-        const char linefeed[] = "\n";
-        char * token = strtok(_buffer, linefeed);
-        if (token == nullptr || strcmp(token, "Quectel_Ltd") != 0)
+        char * token = strtok(_buffer, ",");
+        if (token)
         {
-            if(_debug != false){
-                Serial.println("\nNot a Quectel module!");
+            if (strlen(token) > 7)
+            {
+                strcpy(engineeringData.date, token + 7);
             }
         }
-        token = strtok(nullptr, linefeed);
-        if (token == nullptr)
+        token = strtok(nullptr, ",");
+        if(token)
         {
-            if(_debug != false){
-                Serial.println("\nParse error");
-            }
-            return false;
+            strcpy(engineeringData.date, token + 7);
         }
-        token = strtok(nullptr, linefeed);
-        if (strlen(token) > 10)
+        token = strtok(nullptr, "+-");
+        if(token)
         {
-            strcpy(_firmwareVersion, token + 10);
+            strcpy(engineeringData.time, token);
         }
-    }*/
+        token = strtok(nullptr, "\n");
+        if(token)
+        {
+            strcpy(engineeringData.timezone, token);
+        }
+    }
+
 }
 
 bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, uint8_t lines)

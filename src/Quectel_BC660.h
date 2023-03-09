@@ -38,6 +38,9 @@ class QuectelBC660 {
             int8_t RSSI;
             int8_t SINR;
             char firmwareVersion[20];
+            char date[10];
+            char time[10];
+            char timezone[5]
         };
         
         engineeringStruct engineeringData;
