@@ -16,11 +16,11 @@ void setup()
     }
     quectel.setDeepSleep();
     Serial.println("======MQTT SEND======");
-    quectel.openMQTT("ADDRESS OF MQTT BROKER");
+    quectel.openMQTT("0.0.0.0");	// Replace 0.0.0.0 with address of your MQTT broker
     delay(1000);
     quectel.connectMQTT("Test-123456");
     delay(1000);
-    quectel.publishMQTT("Hello world!", 12, "MQTT TOPIC");
+    quectel.publishMQTT("Hello world!", 12, "MQTT/TOPIC");
     delay(1000);
     quectel.closeMQTT();
     delay(1000);
