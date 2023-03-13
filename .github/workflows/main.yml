@@ -17,7 +17,7 @@ jobs:
             - name: esp32:esp32
               source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
           sketch-paths: |
-            - examples/**
+            - examples/
             #- examples/test_MQTT
             #- examples/test_UDP
             #- examples/test_ready
