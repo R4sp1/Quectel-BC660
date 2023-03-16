@@ -254,7 +254,7 @@ bool QuectelBC660::setOperator(uint8_t mode, uint8_t format, uint32_t timeout)
     return false;
 }
 
-bool QuectelBC660::setOperator(uint8_t mode, uint8_t format, const char* oper, uint32_t timeout)
+bool QuectelBC660::setSpecificOperator(uint8_t mode, uint8_t format, const char* oper, uint32_t timeout)
 {
     // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
@@ -303,7 +303,7 @@ bool QuectelBC660::setAllBands(bool deregistred, uint32_t timeout)
     return false;
 }
 
-bool QuectelBC660::setBand(bool deregistred, uint8_t bandNum, uint8_t bnad, uint32_t timeout)
+bool QuectelBC660::setBand(bool deregistred, uint8_t bandNum, uint8_t band, uint32_t timeout)
 {
     wakeUp();
     sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);

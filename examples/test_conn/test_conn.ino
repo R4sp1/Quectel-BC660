@@ -28,7 +28,7 @@ void setup()
     }
     delay(1000);
     Serial.println("=====Register to specific network=====");
-    if(quectel.setOperator(1,2,"23003"))
+    if(quectel.setSpecificOperator(1,2,"23003"))
     {
         Serial.println("Done!");
     }
