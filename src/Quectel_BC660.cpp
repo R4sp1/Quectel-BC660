@@ -228,16 +228,100 @@ bool QuectelBC660::registered(uint8_t noOfTries, uint32_t delayBetweenTries)
     return false;
 }
 
-bool QuectelBC660::setOperator(uint8_t mode)
+bool QuectelBC660::setOperator(uint8_t mode, uint8_t format, uint8_t timeout)
 {
     // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    sprintf(_buffer, "AT+COPS=%d", mode);
-    if (sendAndWaitFor(_buffer, _OK, 10000))
+    sprintf(_buffer, "AT+COPS=%d,%d", mode, format);
+    if (sendAndWaitFor(_buffer, _OK, timeout))
+    if(mode == 2)
     {
-        flush();
-        return true;
+        if (sendAndWaitFor(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else{
+        if (sendAndWaitFor(_buffer, "+IP:", timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    flush();
+    return false;
+}
+
+bool QuectelBC660::setOperator(uint8_t mode, uint8_t format, const char* oper, uint8_t timeout)
+{
+    // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
+    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
+    wakeUp();
+    sprintf(_buffer, "AT+COPS=%d,%d,\"%s\"", mode, format, oper);
+    if(mode == 2)
+    {
+        if (sendAndWaitFor(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else{
+        if (sendAndWaitFor(_buffer, "+IP:", timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    flush();
+    return false;
+}
+
+bool QuectelBC660::setAllBands(bool deregistred, uint8_t timeout)
+{
+    wakeUp();
+    sprintf(_buffer, "AT+QBAND=0");
+    if(deregistred)
+    {    
+        if (sendAndWaitFor(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else
+    {
+        if (sendAndWaitFor(_buffer, "+IP:", timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    flush();
+    return false;
+}
+
+bool QuectelBC660::setBand(bool deregistred, uint8_t bandNum, uint8_t bnad, uint8_t timeout)
+{
+    wakeUp();
+    sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);
+    if(deregistred)
+    {    
+        if (sendAndWaitFor(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else
+    {
+        if (sendAndWaitFor(_buffer, "+IP:", timeout))
+        {
+            flush();
+            return true;
+        }
     }
     flush();
     return false;
