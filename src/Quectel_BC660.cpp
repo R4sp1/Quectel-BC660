@@ -303,7 +303,7 @@ bool QuectelBC660::setAllBands(bool deregistred, uint32_t timeout)
     return false;
 }
 
-bool QuectelBC660::setBand(bool deregistred, uint8_t bandNum, uint8_t band, uint32_t timeout)
+bool QuectelBC660::setBand(uint8_t bandNum, uint8_t band, bool deregistred, uint32_t timeout)
 {
     wakeUp();
     sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);
