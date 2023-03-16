@@ -19,10 +19,10 @@ class QuectelBC660 {
         uint8_t getStatusCode();
         const char* getStatus();
         bool registered(uint8_t noOfTries = 1, uint32_t delayBetweenTries = 5000);
-        bool setOperator(uint8_t mode = 0, uint8_t format = 0, uint8_t timeout = 300000);
-        bool setOperator(uint8_t mode = 0, uint8_t format = 0, const char* oper, uint8_t timeout = 300000);
-        bool setAllBands(bool deregistred = true, uint8_t timeout = 300000);
-        bool setBand(bool deregistred = true, uint8_t bandNum, uint8_t band, uint8_t timeout = 300000);
+        bool setOperator(uint8_t mode = 0, uint8_t format = 0, uint32_t timeout = 300000);
+        bool setOperator(uint8_t mode = 0, uint8_t format = 0, const char* oper, uint32_t timeout = 300000);
+        bool setAllBands(bool deregistred = true, uint32_t timeout = 300000);
+        bool setBand(bool deregistred = true, uint8_t bandNum, uint8_t band, uint32_t timeout = 300000);
         
         bool setDeepSleep(uint8_t sleepMode = 0);
 
