@@ -6,3 +6,5 @@ Library is using UART line to send AT commands to the Quectel module. Some basic
 ## Current state
 - Implemeted function's to get comunication with module started and to get some data back.
 - Only HardwareSerial is supported for now.
+- Basic MQTT communication is supported.
+- Basic UDP communication is supported.

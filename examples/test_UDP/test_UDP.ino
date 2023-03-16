@@ -16,7 +16,7 @@ void setup()
     }
     quectel.setDeepSleep();
     Serial.println("======UDP SEND======");
-    quectel.openUDP("HOST IP ADDRESS", PORT);
+    quectel.openUDP("0.0.0.0", 0);	// Replace 0.0.0.0 with your host IP adress and 0 with your PORT number
     delay(1000);
     quectel.sendDataUDP("Hello world!", 12);
     delay(1000);
