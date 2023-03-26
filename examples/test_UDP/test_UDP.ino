@@ -10,7 +10,7 @@ void setup()
 	Serial.println("Quectel UDP connection test");
 	Serial.println("===================");
 	quectel.begin(&SERIAL_PORT);
-    if(quectel.registered(5))
+    if(quectel.getRegistrationStatus(5))
     {
         Serial.println("Module is registered to network");
     }

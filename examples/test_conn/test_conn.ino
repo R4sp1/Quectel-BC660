@@ -10,25 +10,25 @@ void setup()
 	Serial.println("Quectel MQTT connection test");
 	Serial.println("===================");
 	quectel.begin(&SERIAL_PORT);
-    if(quectel.registered(5))
+    if(quectel.getRegistrationStatus(5))
     {
         Serial.println("Module is registered to network");
     }
     quectel.setDeepSleep();
     Serial.println("=====Deregister from network=====");
-    if(quectel.setOperator(2))
+    if(quectel.deregisterFromNetwork())
     {
         Serial.println("Done!");
     }
     delay(1000);
     Serial.println("=====Set band to 20=====");
-    if(quectel.setBand(true,1,20))
+    if(quectel.setManualBand(1,20))
     {
         Serial.println("Done!");
     }
     delay(1000);
     Serial.println("=====Register to specific network=====");
-    if(quectel.setSpecificOperator(1,2,"23003"))
+    if(quectel.manualRegisterToNetwork("23003"))
     {
         Serial.println("Done!");
     }
