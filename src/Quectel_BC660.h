@@ -4,37 +4,52 @@
 #include "Arduino.h"
 
 #define NOT -1
+#define ONE_SEC 1000
+#define FIVE_SEC 5000
+#define ONE_MIN 60000
+#define FIVE_MIN 300000
+#define TEN_MIN 600000
+
 
 class QuectelBC660 {
     public:
+        // Constructor
         QuectelBC660(int8_t wakeUpPin = NOT, bool debug = false);
+
+        // Initialization (only HardwareSerial is supported for now)
         bool begin(HardwareSerial *uart);
 
-        bool wakeUp();
-
+        // Status and information
         const char* getFirmwareVersion();
         const char* getDateAndTime();
         int8_t getRSSI();
         uint8_t getBER();
         uint8_t getStatusCode();
         const char* getStatus();
-        bool registered(uint8_t noOfTries = 1, uint32_t delayBetweenTries = 5000);
-        bool setOperator(uint8_t mode = 0, uint8_t format = 0, uint32_t timeout = 300000);
-        bool setSpecificOperator(uint8_t mode, uint8_t format, const char* oper, uint32_t timeout = 300000);
-        bool setAllBands(bool deregistred = true, uint32_t timeout = 300000);
-        bool setBand(uint8_t bandNum, uint8_t band, bool deregistred = true, uint32_t timeout = 300000);
-        
         bool setDeepSleep(uint8_t sleepMode = 0);
+        bool wakeUp();
 
+        // Network
+        bool getRegistrationStatus(uint8_t noOfTries = 1, uint32_t delayBetweenTries = FIVE_SEC);
+        bool deregisterFromNetwork(uint32_t timeout = FIVE_MIN);
+        bool autoRegisterToNetwork(uint32_t timeout = FIVE_MIN);
+        bool manualRegisterToNetwork(const char* oper, uint8_t mode = 4, uint8_t format = 2, uint32_t timeout = FIVE_MIN);
+        bool setAutoBand(bool deregistred = true, uint32_t timeout = FIVE_MIN);
+        bool setManualBand(uint8_t bandNum, uint8_t band, bool deregistred = true, uint16_t timeout = FIVE_MIN);
+        
+        
+        // MQTT
         bool openMQTT(const char* host, uint16_t port = 1883, uint8_t TCPconnectID = 0);
         bool closeMQTT();
         bool connectMQTT(const char* clientID);
         bool publishMQTT(const char* msg, uint16_t msgLen, const char* topic, uint16_t msgID = 0, uint8_t QoS = 0, uint8_t retain = 0);
 
+        // UDP socket
         bool openUDP(const char* host, uint16_t port, uint8_t TCPconnectID = 0);
         bool closeUDP();
         bool sendDataUDP(const char* msg, uint16_t msgLen);
 
+        // Engineering data
         struct engineeringStruct
         {
             int8_t RSRP;
@@ -45,29 +60,27 @@ class QuectelBC660 {
             time_t epoch;
             int16_t timezone;
         };
-        
         engineeringStruct engineeringData;
-
         void getData();
-        
 
+        // Flush the serial buffer
         void flush();
-
     private:
-        bool sendAndWaitForReply(const char* command, uint16_t timeout = 1000, uint8_t lines = 1);
+        // Reply management
+        bool sendAndWaitForReply(const char* command, uint16_t timeout = ONE_SEC, uint8_t lines = 1);
         bool sendAndWaitFor(const char* command, const char* reply, uint16_t timeout); 
-        bool sendAndCheckReply(const char* command, const char* reply, uint16_t timeout = 1000);
-        bool readReply(uint16_t timeout = 1000, uint8_t lines = 1);
+        bool sendAndCheckReply(const char* command, const char* reply, uint16_t timeout = ONE_SEC);
+        bool readReply(uint16_t timeout = ONE_SEC, uint8_t lines = 1);
 
+        // TODO: updateSleepMode() is not working as expected yet
         void updateSleepMode();
 
+        // Private variables
         int8_t _wakeUpPin;
         bool _debug;
         HardwareSerial *_uart;
         uint8_t _sleepMode;
         uint8_t _TCPconnectID;
-
-
         char _buffer[255];
         char _command[32];
         char _firmwareVersion[20];
@@ -76,7 +89,7 @@ class QuectelBC660 {
         uint16_t _port;
         struct tm t = {0};
         
-
+        // Private constants
         const char* _AT = "AT";
         const char* _OK = "OK";
         const char* _ERROR = "ERROR";

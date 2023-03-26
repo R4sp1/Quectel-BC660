@@ -2,6 +2,7 @@
 #include <time.h>
 #include "Quectel_BC660.h"
 
+// Constructor
 QuectelBC660::QuectelBC660(int8_t wakeUpPin, bool debug)
 {
     _wakeUpPin = wakeUpPin;
@@ -12,6 +13,7 @@ QuectelBC660::QuectelBC660(int8_t wakeUpPin, bool debug)
     }
 }
 
+// Initialization (only HardwareSerial is supported for now)
 bool QuectelBC660::begin(HardwareSerial *uart)
 {
     _uart = uart;
@@ -31,6 +33,7 @@ bool QuectelBC660::begin(HardwareSerial *uart)
     return true;
 }
 
+// Status and information
 const char* QuectelBC660::getFirmwareVersion()
 {
 	return _firmwareVersion;
@@ -207,123 +210,34 @@ const char* QuectelBC660::getStatus()
     return "ERROR";
 }
 
-bool QuectelBC660::registered(uint8_t noOfTries, uint32_t delayBetweenTries)
+bool QuectelBC660::setDeepSleep(uint8_t sleepMode)
 {
-    for(uint8_t i = 0; i < noOfTries; i++)
+    _sleepMode = sleepMode;
+    wakeUp();
+    if(_sleepMode == 1)
     {
-        uint8_t statusCode = getStatusCode();
         if(_debug != false){
-            Serial.print("\nStatus code: ");
-            Serial.println(statusCode);
+        Serial.println("\nEnabling light sleep and deep sleep!");
         }
-        if(statusCode == 1 || statusCode == 5)
-        {
-            return true;
-        }
-        else
-        {
-            delay(delayBetweenTries);
-        }
+        sendAndCheckReply("AT+QSCLK=1", _OK, 1000);
+        return true;
     }
-    return false;
-}
-
-bool QuectelBC660::setOperator(uint8_t mode, uint8_t format, uint32_t timeout)
-{
-    // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
-    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
-    wakeUp();
-    sprintf(_buffer, "AT+COPS=%d,%d", mode, format);
-    if (sendAndWaitFor(_buffer, _OK, timeout))
-    if(mode == 2)
+    else if(_sleepMode == 2)
     {
-        if (sendAndWaitFor(_buffer, _OK, timeout))
-        {
-            flush();
-            return true;
+        if(_debug != false){
+        Serial.println("Enabling light sleep only!");
         }
-    }
-    else{
-        if (sendAndWaitFor(_buffer, "+IP:", timeout))
-        {
-            flush();
-            return true;
-        }
-    }
-    flush();
-    return false;
-}
-
-bool QuectelBC660::setSpecificOperator(uint8_t mode, uint8_t format, const char* oper, uint32_t timeout)
-{
-    // Write command: AT+COPS=<mode>[,<format>[,<oper>[,<AcT>]]
-    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
-    wakeUp();
-    sprintf(_buffer, "AT+COPS=%d,%d,\"%s\"", mode, format, oper);
-    if(mode == 2)
-    {
-        if (sendAndWaitFor(_buffer, _OK, timeout))
-        {
-            flush();
-            return true;
-        }
-    }
-    else{
-        if (sendAndWaitFor(_buffer, "+IP:", timeout))
-        {
-            flush();
-            return true;
-        }
-    }
-    flush();
-    return false;
-}
-
-bool QuectelBC660::setAllBands(bool deregistred, uint32_t timeout)
-{
-    wakeUp();
-    sprintf(_buffer, "AT+QBAND=0");
-    if(deregistred)
-    {    
-        if (sendAndWaitFor(_buffer, _OK, timeout))
-        {
-            flush();
-            return true;
-        }
+        sendAndCheckReply("AT+QSCLK=2", _OK, 1000);
+        return true;
     }
     else
     {
-        if (sendAndWaitFor(_buffer, "+IP:", timeout))
-        {
-            flush();
-            return true;
+        if(_debug != false){
+        Serial.println("Disabling sleep modes!");
         }
+        sendAndCheckReply("AT+QSCLK=0", _OK, 1000);
+        return true;
     }
-    flush();
-    return false;
-}
-
-bool QuectelBC660::setBand(uint8_t bandNum, uint8_t band, bool deregistred, uint32_t timeout)
-{
-    wakeUp();
-    sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);
-    if(deregistred)
-    {    
-        if (sendAndWaitFor(_buffer, _OK, timeout))
-        {
-            flush();
-            return true;
-        }
-    }
-    else
-    {
-        if (sendAndWaitFor(_buffer, "+IP:", timeout))
-        {
-            flush();
-            return true;
-        }
-    }
-    flush();
     return false;
 }
 
@@ -382,39 +296,124 @@ bool QuectelBC660::wakeUp()
         return false;
     }
 
+
+
 }
 
-bool QuectelBC660::setDeepSleep(uint8_t sleepMode)
+// Network functions
+bool QuectelBC660::getRegistrationStatus(uint8_t noOfTries, uint32_t delayBetweenTries)
 {
-    _sleepMode = sleepMode;
+    for(uint8_t i = 0; i < noOfTries; i++)
+    {
+        uint8_t statusCode = getStatusCode();
+        if(_debug != false){
+            Serial.print("\nStatus code: ");
+            Serial.println(statusCode);
+        }
+        if(statusCode == 1 || statusCode == 5)
+        {
+            return true;
+        }
+        else
+        {
+            delay(delayBetweenTries);
+        }
+    }
+    return false;
+}
+
+bool QuectelBC660::deregisterFromNetwork(uint32_t timeout)
+{
+    // Write command: AT+COPS=2
+    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    if(_sleepMode == 1)
+    if (sendAndCheckReply("AT+COPS=2", _OK, timeout))
     {
-        if(_debug != false){
-        Serial.println("\nEnabling light sleep and deep sleep!");
-        }
-        sendAndCheckReply("AT+QSCLK=1", _OK, 1000);
-        return true;
-    }
-    else if(_sleepMode == 2)
-    {
-        if(_debug != false){
-        Serial.println("Enabling light sleep only!");
-        }
-        sendAndCheckReply("AT+QSCLK=2", _OK, 1000);
-        return true;
-    }
-    else
-    {
-        if(_debug != false){
-        Serial.println("Disabling sleep modes!");
-        }
-        sendAndCheckReply("AT+QSCLK=0", _OK, 1000);
+        flush();
         return true;
     }
     return false;
 }
 
+bool QuectelBC660::autoRegisterToNetwork(uint32_t timeout)
+{
+    // Write command: AT+COPS=0
+    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
+    wakeUp();
+    if (sendAndCheckReply("AT+COPS=0", "IP+", timeout))
+    {
+        flush();
+        return true;
+    }
+    return false;
+}
+
+bool QuectelBC660::manualRegisterToNetwork(const char* operatorName, uint8_t mode, uint8_t format, uint32_t timeout)
+{
+    // Write command: AT+COPS=1,<format>,<oper> or AT+COPS=4,<format>,<oper> - if <mode> is not specified, default is 4, if <format> is not specified, default is 2
+    // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
+    // <format>: 0 = long alphanumeric, 1 = short alphanumeric, 2 = numeric
+    // <oper>: Operator name or numeric code
+    wakeUp();
+    sprintf(_buffer, "AT+COPS=%d,%d,\"%s\"", mode, format, operatorName);
+    if (sendAndCheckReply(_buffer, "IP+", timeout))
+    {
+        flush();
+        return true;
+    }
+    return false;
+}
+
+
+bool QuectelBC660::setAutoBand(bool deregistred, uint32_t timeout)
+{
+    wakeUp();
+    sprintf(_buffer, "AT+QBAND=0");
+    if(deregistred)
+    {    
+        if (sendAndCheckReply(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else
+    {
+        if (sendAndCheckReply(_buffer, "+IP:", timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    flush();
+    return false;
+}
+
+bool QuectelBC660::setManualBand(uint8_t bandNum, uint8_t band, bool deregistred, uint16_t timeout)
+{
+    wakeUp();
+    sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);
+    if(deregistred)
+    {    
+        if (sendAndCheckReply(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    else
+    {
+        if (sendAndCheckReply(_buffer, _OK, timeout))
+        {
+            flush();
+            return true;
+        }
+    }
+    flush();
+    return false;
+}
+
+// MQTT functions
 bool QuectelBC660::openMQTT(const char* host, uint16_t port, uint8_t TCPconnectID)
 {
     _TCPconnectID = TCPconnectID;
@@ -519,6 +518,7 @@ bool QuectelBC660::publishMQTT(const char* msg, uint16_t msgLen, const char* top
     return false;
 }
 
+// UDP functions
 bool QuectelBC660::openUDP(const char* host, uint16_t port, uint8_t TCPconnectID)
 {
     _TCPconnectID = TCPconnectID;
@@ -609,6 +609,7 @@ bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen)
     return false;
 }
 
+// Engineering data functions
 void QuectelBC660::getData(){
     // Engineering data
     // +QENG: 0,<sc_EARFCN>,<sc_EARFCN_offset>,<sc_pci>,<sc_cellID>,[<sc_RSRP>],[<sc_RSRQ>],[<sc_RSSI>],[<sc_SINR>],<sc_band>,<sc_TAC>,[<sc_ECL>],[<sc_Tx_pwr>],<operation_mode>
@@ -742,6 +743,7 @@ void QuectelBC660::getData(){
 
 }
 
+// Replay management functions
 bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, uint8_t lines)
 {
     flush();
@@ -872,6 +874,7 @@ bool QuectelBC660::readReply(uint16_t timeout, uint8_t lines)
     return true;
 }
 
+// Flush serial buffer
 void QuectelBC660::flush()
 {
     while (_uart->available())
