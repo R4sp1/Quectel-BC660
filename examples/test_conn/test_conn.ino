@@ -21,8 +21,9 @@ void setup()
         Serial.println("Done!");
     }
     delay(1000);
-    Serial.println("=====Set band to 20=====");
-    if(quectel.setManualBand(1,20))
+    Serial.println("=====Set bands to 8 and 20=====");
+    int bands[2] = {8, 20};
+    if(quectel.setManualBand(2,bands))
     {
         Serial.println("Done!");
     }

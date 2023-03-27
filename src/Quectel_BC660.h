@@ -35,7 +35,7 @@ class QuectelBC660 {
         bool autoRegisterToNetwork(uint32_t timeout = FIVE_MIN);
         bool manualRegisterToNetwork(const char* oper, uint8_t mode = 4, uint8_t format = 2, uint32_t timeout = FIVE_MIN);
         bool setAutoBand(bool deregistred = true, uint32_t timeout = FIVE_MIN);
-        bool setManualBand(uint8_t bandNum, uint8_t band, bool deregistred = true, uint16_t timeout = FIVE_MIN);
+        bool setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregistred = true, uint16_t timeout = FIVE_MIN);
         
         
         // MQTT

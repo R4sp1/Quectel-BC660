@@ -340,7 +340,7 @@ bool QuectelBC660::autoRegisterToNetwork(uint32_t timeout)
     // Write command: AT+COPS=0
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    if (sendAndCheckReply("AT+COPS=0", "IP+", timeout))
+    if (sendAndCheckReply("AT+COPS=0", "+IP:", timeout))
     {
         flush();
         return true;
@@ -356,11 +356,12 @@ bool QuectelBC660::manualRegisterToNetwork(const char* operatorName, uint8_t mod
     // <oper>: Operator name or numeric code
     wakeUp();
     sprintf(_buffer, "AT+COPS=%d,%d,\"%s\"", mode, format, operatorName);
-    if (sendAndCheckReply(_buffer, "IP+", timeout))
+    if (sendAndCheckReply(_buffer, "+IP:", timeout))
     {
         flush();
         return true;
     }
+    flush();
     return false;
 }
 
@@ -389,10 +390,14 @@ bool QuectelBC660::setAutoBand(bool deregistred, uint32_t timeout)
     return false;
 }
 
-bool QuectelBC660::setManualBand(uint8_t bandNum, uint8_t band, bool deregistred, uint16_t timeout)
+bool QuectelBC660::setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregistred, uint16_t timeout)
 {
     wakeUp();
-    sprintf(_buffer, "AT+QBAND=%d,%d", bandNum, band);
+    sprintf(_buffer, "AT+QBAND=%d", numOfBands);
+    for(uint8_t i = 0; i < numOfBands; i++)
+    {
+        sprintf(_buffer, "%s,%d", _buffer, bands[i]);
+    }
     if(deregistred)
     {    
         if (sendAndCheckReply(_buffer, _OK, timeout))
