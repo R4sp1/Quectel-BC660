@@ -35,7 +35,7 @@ class QuectelBC660 {
         bool autoRegisterToNetwork(uint32_t timeout = FIVE_MIN);
         bool manualRegisterToNetwork(const char* oper, uint8_t mode = 4, uint8_t format = 2, uint32_t timeout = FIVE_MIN);
         bool setAutoBand(bool deregistred = true, uint32_t timeout = FIVE_MIN);
-        bool setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregistred = true, uint16_t timeout = FIVE_MIN);
+        bool setManualBand(uint8_t numOfBands, uint8_t* bands, bool deregistred = true, uint32_t timeout = FIVE_MIN);
         
         
         // MQTT
@@ -67,10 +67,10 @@ class QuectelBC660 {
         void flush();
     private:
         // Reply management
-        bool sendAndWaitForReply(const char* command, uint16_t timeout = ONE_SEC, uint8_t lines = 1);
-        bool sendAndWaitFor(const char* command, const char* reply, uint16_t timeout); 
-        bool sendAndCheckReply(const char* command, const char* reply, uint16_t timeout = ONE_SEC);
-        bool readReply(uint16_t timeout = ONE_SEC, uint8_t lines = 1);
+        bool sendAndWaitForReply(const char* command, uint32_t timeout = ONE_SEC, uint8_t lines = 1);
+        bool sendAndWaitFor(const char* command, const char* reply, uint32_t timeout); 
+        bool sendAndCheckReply(const char* command, const char* reply, uint32_t timeout = ONE_SEC);
+        bool readReply(uint32_t timeout = ONE_SEC, uint8_t lines = 1);
 
         // TODO: updateSleepMode() is not working as expected yet
         void updateSleepMode();
