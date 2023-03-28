@@ -390,7 +390,7 @@ bool QuectelBC660::setAutoBand(bool deregistred, uint32_t timeout)
     return false;
 }
 
-bool QuectelBC660::setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregistred, uint16_t timeout)
+bool QuectelBC660::setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregistred, uint32_t timeout)
 {
     wakeUp();
     sprintf(_buffer, "AT+QBAND=%d", numOfBands);
@@ -749,7 +749,7 @@ void QuectelBC660::getData(){
 }
 
 // Replay management functions
-bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, uint8_t lines)
+bool QuectelBC660::sendAndWaitForReply(const char* command, uint32_t timeout, uint8_t lines)
 {
     flush();
 	if(_debug != false){
@@ -760,7 +760,7 @@ bool QuectelBC660::sendAndWaitForReply(const char* command, uint16_t timeout, ui
     return readReply(timeout, lines);
 }
 
-bool QuectelBC660::sendAndWaitFor(const char* command, const char* reply, uint16_t timeout)
+bool QuectelBC660::sendAndWaitFor(const char* command, const char* reply, uint32_t timeout)
 {
     uint16_t index = 0;
 
@@ -816,13 +816,13 @@ bool QuectelBC660::sendAndWaitFor(const char* command, const char* reply, uint16
     return true;
 }
 
-bool QuectelBC660::sendAndCheckReply(const char* command, const char* reply, uint16_t timeout)
+bool QuectelBC660::sendAndCheckReply(const char* command, const char* reply, uint32_t timeout)
 {
     sendAndWaitForReply(command, timeout);
     return (strstr(_buffer, reply) != nullptr);
 }
 
-bool QuectelBC660::readReply(uint16_t timeout, uint8_t lines)
+bool QuectelBC660::readReply(uint32_t timeout, uint8_t lines)
 {
     uint16_t index = 0;
     uint16_t linesFound = 0;
