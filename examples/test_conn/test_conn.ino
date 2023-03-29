@@ -20,6 +20,10 @@ void setup()
     {
         Serial.println("Done!");
     }
+    else 
+    {
+        Serial.println("ERROR!");
+    }
     delay(1000);
     Serial.println("=====Set bands to 8 and 20=====");
     uint8_t bands[2] = {8, 20};
@@ -27,11 +31,19 @@ void setup()
     {
         Serial.println("Done!");
     }
+    else 
+    {
+        Serial.println("ERROR!");
+    }
     delay(1000);
     Serial.println("=====Register to specific network=====");
     if(quectel.manualRegisterToNetwork("23003"))
     {
         Serial.println("Done!");
+    } 
+    else 
+    {
+        Serial.println("ERROR!");
     }
     delay(1000);
     Serial.println("======TEST DONE======");
