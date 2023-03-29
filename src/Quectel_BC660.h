@@ -93,6 +93,7 @@ class QuectelBC660 {
         const char* _AT = "AT";
         const char* _OK = "OK";
         const char* _ERROR = "ERROR";
+        const char* _IP = "+IP:";
 };
 
 #endif
