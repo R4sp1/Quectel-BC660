@@ -327,9 +327,8 @@ bool QuectelBC660::deregisterFromNetwork(uint32_t timeout)
     // Write command: AT+COPS=2
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    if (sendAndCheckReply("AT+COPS=2", _OK, timeout))
+    if (sendAndWaitFor("AT+COPS=2", _OK, timeout))
     {
-        flush();
         return true;
     }
     return false;
@@ -340,9 +339,8 @@ bool QuectelBC660::autoRegisterToNetwork(uint32_t timeout)
     // Write command: AT+COPS=0
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    if (sendAndCheckReply("AT+COPS=0", "+IP:", timeout))
+    if (sendAndWaitFor("AT+COPS=0", _IP, timeout))
     {
-        flush();
         return true;
     }
     return false;
@@ -356,12 +354,10 @@ bool QuectelBC660::manualRegisterToNetwork(const char* operatorName, uint8_t mod
     // <oper>: Operator name or numeric code
     wakeUp();
     sprintf(_buffer, "AT+COPS=%d,%d,\"%s\"", mode, format, operatorName);
-    if (sendAndCheckReply(_buffer, "+IP:", timeout))
+    if (sendAndWaitFor(_buffer, _IP, timeout))
     {
-        flush();
         return true;
     }
-    flush();
     return false;
 }
 
@@ -372,21 +368,18 @@ bool QuectelBC660::setAutoBand(bool deregistred, uint32_t timeout)
     sprintf(_buffer, "AT+QBAND=0");
     if(deregistred)
     {    
-        if (sendAndCheckReply(_buffer, _OK, timeout))
+        if (sendAndWaitFor(_buffer, _OK, timeout))
         {
-            flush();
             return true;
         }
     }
     else
     {
-        if (sendAndCheckReply(_buffer, "+IP:", timeout))
+        if (sendAndWaitFor(_buffer, _IP, timeout))
         {
-            flush();
             return true;
         }
     }
-    flush();
     return false;
 }
 
@@ -400,21 +393,18 @@ bool QuectelBC660::setManualBand(uint8_t numOfBands, uint8_t *bands, bool deregi
     }
     if(deregistred)
     {    
-        if (sendAndCheckReply(_buffer, _OK, timeout))
+        if (sendAndWaitFor(_buffer, _OK, timeout))
         {
-            flush();
             return true;
         }
     }
     else
     {
-        if (sendAndCheckReply(_buffer, _OK, timeout))
+        if (sendAndWaitFor(_buffer, _IP, timeout))
         {
-            flush();
             return true;
         }
     }
-    flush();
     return false;
 }
 
@@ -465,6 +455,11 @@ bool QuectelBC660::openMQTT(const char* host, uint16_t port, uint8_t TCPconnectI
             }
         }
     }
+    if(_debug != false)
+    {
+        Serial.print("\nMQTT open failed, different error occured!");
+    }
+    return false;
 }
 
 bool QuectelBC660::closeMQTT()
@@ -564,6 +559,11 @@ bool QuectelBC660::openUDP(const char* host, uint16_t port, uint8_t TCPconnectID
             }
         }
     }
+    if(_debug != false)
+    {
+        Serial.print("\nUDP client connection failed, different error occured!");
+    }
+    return false;
 }
 
 bool QuectelBC660::closeUDP()
