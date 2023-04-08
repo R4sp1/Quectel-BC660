@@ -301,6 +301,25 @@ bool QuectelBC660::wakeUp()
 }
 
 // Network functions
+bool QuectelBC660::setDefaultAPN(const char* PDP_type, const char* APN, const char* username, const char* password, uint8_t auth_type, uint32_t timeout)
+{
+    // Write the default PDP context to the module
+    // AT+QCGDEFCONT=<PDP_type>,<APN>[,<username>,<password>[,<auth_type>]]
+    // PDP_type: String type (IP, IPV6, IPV4V6, Non-IP)
+
+    if(auth_type =! 0)
+    {
+        sprintf(_buffer, "AT+QCGDEFCONT=\"%s\",\"%s\",\"%s\",\"%s\",%d", PDP_type, APN, username, password, auth_type);
+    } 
+    else 
+    {
+        sprintf(_buffer, "AT+QCGDEFCONT=\"%s\",\"%s\"", PDP_type, APN);
+    }
+    wakeUp();
+    return sendAndCheckReply(_buffer, _OK, timeout);
+}
+
+
 bool QuectelBC660::getRegistrationStatus(uint8_t noOfTries, uint32_t delayBetweenTries)
 {
     for(uint8_t i = 0; i < noOfTries; i++)

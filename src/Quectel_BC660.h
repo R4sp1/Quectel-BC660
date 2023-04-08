@@ -30,6 +30,7 @@ class QuectelBC660 {
         bool wakeUp();
 
         // Network
+        bool setDefaultAPN(const char* PDP_type, const char* APN, const char* username = "", const char* password = "", uint8_t auth_type = 0, uint32_t timeout = FIVE_MIN);
         bool getRegistrationStatus(uint8_t noOfTries = 1, uint32_t delayBetweenTries = FIVE_SEC);
         bool deregisterFromNetwork(uint32_t timeout = FIVE_MIN);
         bool autoRegisterToNetwork(uint32_t timeout = FIVE_MIN);
