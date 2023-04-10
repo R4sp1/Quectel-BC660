@@ -357,7 +357,7 @@ bool QuectelBC660::setPSM(const char* requested_periodic_TAU, const char* reques
 
 
     sprintf(_buffer, "AT+CPSMS=%d,,,\"%s\",\"%s\"", mode, requested_periodic_TAU, requested_active_time);
-    wakeup();
+    wakeUp();
     return sendAndCheckReply(_buffer, _OK, 1000);
 }
 
