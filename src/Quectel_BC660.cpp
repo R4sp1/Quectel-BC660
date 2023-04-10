@@ -300,6 +300,67 @@ bool QuectelBC660::wakeUp()
 
 }
 
+// eDRX and PSM timer settings
+const char* QuectelBC660::getPSM()
+{
+    // Reply is:
+    // +CPSMS: <mode>,,,<requested_periodic_TAU>,<requested_active_time>
+    // 
+    // OK
+    wakeUp();
+    if (sendAndWaitForReply("AT+CPSMS?", 1000, 3))
+    {
+        char * token = strtok(_buffer, "\n");
+        if (token)
+        if (strlen(token) > 8)
+        {
+            strcpy(_psm, token);
+            return _psm;
+        }
+    }
+    return "ERROR";
+}
+
+bool QucetelBC660::setPSM(const char* requested_periodic_TAU, const char* requested_active_time, uint8_t mode)
+{
+    // AT+CPSMS=<mode>[,,,<requested_periodic_TAU>[,<requested_active_time>]]
+    // mode: Integer type
+                // 0 = Disable PSM
+                // 1 = Enable PSM
+                // 2 = Disable the use of PSM and discard all parameters for PSM or, if avaliable, reset to the default values
+
+    // requested_periodic_TAU: String type
+                // One byte in an 8-bit format. Requested extended periodic TAU value (T3412) to be allocated to the UE in E-UTRAN.
+                // Most significant bit (MSB) is coded first. For example: "01000111" equals 70 hours
+                // Bits 8 to 6 defines the timer value unit as follows:
+                // Bits
+                // 8 7 6
+                // 0 0 0 = value is incremented in multiples of 10 minutes
+                // 0 0 1 = value is incremented in multiples of 1 hour
+                // 0 1 0 = value is incremented in multiples of 10 hours
+                // 0 1 1 = value is incremented in multiples of 2 seconds
+                // 1 0 0 = value is incremented in multiples of 30 seconds
+                // 1 0 1 = value is incremented in multiples of 1 minute
+                // 1 1 0 = value is incremented in multiples of 320 hours
+                // 1 1 1 = value indicates that the timer is deactivated
+
+    // requested_active_time: String type
+                // One byte in an 8-bit format. Requested active time value (T3324) to be allocated to the UE in E-UTRAN.
+                // Most significant bit (MSB) is coded first. For example: "00100100" equals 4 minutes.
+                // Bits 8 to 6 defines the timer value unit as follows:
+                // Bits
+                // 8 7 6
+                // 0 0 0 = value is incremented in multiples of 2 seconds
+                // 0 0 1 = value is incremented in multiples of 1 minute
+                // 0 1 0 = value is incremented in multiples of 6 minutes
+                // 1 1 1 = value indicates that the timer is deactivated
+
+
+    sprintf(_buffer, "AT+CPSMS=%d,,,\"%s\",\"%s\"", mode, requested_periodic_TAU, requested_active_time);
+    wakeup();
+    return sendAndCheckReply(_buffer, _OK, 1000);
+}
+
 // Network functions
 bool QuectelBC660::setDefaultAPN(const char* PDP_type, const char* APN, const char* username, const char* password, uint8_t auth_type, uint32_t timeout)
 {

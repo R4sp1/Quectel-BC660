@@ -29,6 +29,10 @@ class QuectelBC660 {
         bool setDeepSleep(uint8_t sleepMode = 0);
         bool wakeUp();
 
+        // eDRX and PSM timers
+        const char* getPSM();
+        bool setPSM(const char* requested_periodic_TAU, const char* requested_active_time, uint8_t mode = 1);
+
         // Network
         bool setDefaultAPN(const char* PDP_type, const char* APN, const char* username = "", const char* password = "", uint8_t auth_type = 0, uint32_t timeout = FIVE_MIN);
         bool getRegistrationStatus(uint8_t noOfTries = 1, uint32_t delayBetweenTries = FIVE_SEC);
@@ -86,6 +90,7 @@ class QuectelBC660 {
         char _command[32];
         char _firmwareVersion[20];
         char _dateAndTime[40];
+        char _PSM[40];
         char _host[40];
         uint16_t _port;
         struct tm t = {0};
