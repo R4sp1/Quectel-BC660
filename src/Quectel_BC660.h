@@ -90,7 +90,7 @@ class QuectelBC660 {
         char _command[32];
         char _firmwareVersion[20];
         char _dateAndTime[40];
-        char _PSM[40];
+        char _psm[40];
         char _host[40];
         uint16_t _port;
         struct tm t = {0};

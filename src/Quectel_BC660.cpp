@@ -321,7 +321,7 @@ const char* QuectelBC660::getPSM()
     return "ERROR";
 }
 
-bool QucetelBC660::setPSM(const char* requested_periodic_TAU, const char* requested_active_time, uint8_t mode)
+bool QuectelBC660::setPSM(const char* requested_periodic_TAU, const char* requested_active_time, uint8_t mode)
 {
     // AT+CPSMS=<mode>[,,,<requested_periodic_TAU>[,<requested_active_time>]]
     // mode: Integer type
