@@ -19,5 +19,8 @@ jobs:
           sketch-paths: |
             - test/
             - examples/
+          libraries: |
+            - name: OneWire
+            - name: DallasTemperature
           cli-compile-flags: |
             - --warnings="none"
