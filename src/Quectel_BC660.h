@@ -55,8 +55,7 @@ class QuectelBC660 {
         bool sendDataUDP(const char* msg, uint16_t msgLen);
 
         // Engineering data
-        struct engineeringStruct
-        {
+        struct engineeringStruct{
             int8_t RSRP;
             int8_t RSRQ;
             int8_t RSSI;
