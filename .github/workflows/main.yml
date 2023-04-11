@@ -22,5 +22,6 @@ jobs:
           libraries: |
             - name: OneWire
             - name: DallasTemperature
+            - source-path: src/
           cli-compile-flags: |
             - --warnings="none"
