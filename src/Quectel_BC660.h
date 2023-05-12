@@ -34,6 +34,7 @@ class QuectelBC660 {
         bool setPSM(const char* requested_periodic_TAU, const char* requested_active_time, uint8_t mode = 1);
 
         // Network
+        bool setUEFun(uint8_t fun = 1);
         bool setDefaultAPN(const char* PDP_type, const char* APN, const char* username = "", const char* password = "", uint8_t auth_type = 0, uint32_t timeout = FIVE_MIN);
         bool getRegistrationStatus(uint8_t noOfTries = 1, uint32_t delayBetweenTries = FIVE_SEC);
         bool deregisterFromNetwork(uint32_t timeout = FIVE_MIN);
@@ -53,6 +54,7 @@ class QuectelBC660 {
         bool openUDP(const char* host, uint16_t port, uint8_t TCPconnectID = 0);
         bool closeUDP();
         bool sendDataUDP(const char* msg, uint16_t msgLen);
+        bool sendDataUDPn(const char* msg, uint16_t msgLen, uint8_t raiMode = 0);
 
         // Engineering data
         struct engineeringStruct{

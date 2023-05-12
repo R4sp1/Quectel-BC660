@@ -318,6 +318,18 @@ bool QuectelBC660::setPSM(const char* requested_periodic_TAU, const char* reques
 }
 
 // Network functions
+bool QuectelBC660::setUEFun(uint8_t fun){
+    // Write command: AT+CFUN=<fun>
+    // fun: Integer type
+                // 0 = Minimum functionality
+                // 1 = Full functionality (Default)
+                // 4 = Disable RF transmitting and receiving
+    // rst param is not currently supported by Quectel BC660 so it is not implemented here
+    sprintf(_buffer, "AT+CFUN=%d", fun);
+    wakeUp();
+    return sendAndCheckReply(_buffer, _OK, 25000);
+}
+
 bool QuectelBC660::setDefaultAPN(const char* PDP_type, const char* APN, const char* username, const char* password, uint8_t auth_type, uint32_t timeout){
     // Write the default PDP context to the module
     // AT+QCGDEFCONT=<PDP_type>,<APN>[,<username>,<password>[,<auth_type>]]
@@ -355,10 +367,7 @@ bool QuectelBC660::deregisterFromNetwork(uint32_t timeout){
     // Write command: AT+COPS=2
     // Mode: 0 = automatic, 1 = manual operator sel, 2 = manualy deregister from network, 3 = Set <format> not shown in read command response, 4 = Manual/automatic selected. If manual selection fails, automatic mode(<mode>=0) is entered
     wakeUp();
-    if (sendAndWaitFor("AT+COPS=2", _OK, timeout)){
-        return true;
-    }
-    return false;
+    return sendAndWaitFor("AT+COPS=2", _OK, timeout);
 }
 
 bool QuectelBC660::autoRegisterToNetwork(uint32_t timeout){
@@ -588,6 +597,17 @@ bool QuectelBC660::sendDataUDP(const char* msg, uint16_t msgLen){
         Serial.print("\nSend failed");
     }
     return false;
+}
+
+bool QuectelBC660::sendDataUDPn(const char* msg, uint16_t msgLen, uint8_t raiMode){
+    sprintf(_buffer, "AT+QISEND=%d,%d,\"%s\",%d", _TCPconnectID, msgLen, msg, raiMode);
+    if(!sendAndCheckReply(_buffer, "SEND OK", 5000)){
+        if(_debug != false){
+            Serial.print("\nSend failed");
+        }
+        return false;
+    }
+    return true;
 }
 
 // Engineering data functions
